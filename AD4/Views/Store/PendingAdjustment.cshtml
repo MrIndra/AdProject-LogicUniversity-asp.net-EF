@@ -1,0 +1,137 @@
+﻿
+@{
+    ViewBag.Title = "PendingAdjustment";
+    Layout = "~/Views/Shared/_StoreLayout.cshtml";
+}
+<div class="sixteen wide tablet sixteen wide computer column">
+    <a class="ui gray tag label" href="@Url.Action("Adjustment", "Store")">Adjustment</a>
+    <a class="ui blue tag label">Pending Adjustment</a>
+    <table class="ui celled table">
+        <thead>
+            <tr>
+                <th>Adjustment ID</th>
+                <th>Submitted Date</th>
+                <th>Raised By</th>
+                <th>Total value</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>01/06/2019</td>
+                <td>Clerk</td>
+                <td>$435.00</td>
+                <td><button class="ui primary basic button" onclick="viewOnClick(1)">VIEW</button></td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>01/06/2019</td>
+                <td>Supervisor</td>
+                <td>$435.00</td>
+                <td><button class="ui primary basic button" onclick="viewOnClick(2)">VIEW</button></td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>01/06/2019</td>
+                <td>Clerk 2</td>
+                <td>$435.00</td>
+                <td><button class="ui primary basic button ">VIEW</button></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="ui modal">
+    <div class="ui tiny header">
+        <span id="order-id">Adjustment ID : 1</span><br />
+        <span id="submitted-date">Submitted Date : 17/07/2019</span><br />
+        <span id="raised-by">Raised By : Clerk Name</span><br />
+    </div>
+    <div class="content">
+        <table class="ui celled table">
+            <thead>
+                <tr>
+                    <th style="background-color:#f2f2f2;">Code</th>
+                    <th style="background-color:#f2f2f2;">Name</th>
+                    <th style="background-color:#f2f2f2;">Adjustment</th>
+                    <th style="background-color:#f2f2f2;">Reason</th>
+                    <th style="background-color:#f2f2f2;">Value</th>
+                </tr>
+            </thead>
+            <tbody id="order-table-body"></tbody>
+            <tfoot>
+                <tr>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th>SUBTOTAL</th>
+                    <th>$7500.00</th>
+                </tr>
+            </tfoot>
+        </table>
+        <div class="ui grid">
+            <div class="eight wide tablet column">
+                <textarea style="width: 100%" rows="4" placeholder="Pleave give a reason..."></textarea>
+            </div>
+            <div class="eight wide tablet column" style="position: relative;">
+                <div style="position : absolute; bottom : 10px;right: 10px;">
+                    <button class="ui positive button">Approve</button>
+                    <button class="ui negative button">Reject</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+    });
+
+    var tbody = $('#order-table-body');
+    function viewOnClick() {
+        {
+            tbody.empty();
+            var rows = [
+                { Code: 'XHKS', Name: 'Pen', Adjustment: -20, Reason: "Damaged/Defective", Value: 200 },
+                { Code: 'XHKS', Name: 'Pen', Adjustment: -10, Reason: "Damaged/Defective", Value: 200 },
+                { Code: 'XHKS', Name: 'Pen', Adjustment: +5, Reason: "gift", Value: 200 }
+            ];
+
+            rows.map(row => {
+                var tRow = document.createElement('tr');
+
+                var tdCode = document.createElement('td');
+                var codeNode = document.createTextNode(row.Code);
+                tdCode.appendChild(codeNode);
+
+                var tdName = document.createElement('td');
+                var nameNode = document.createTextNode(row.Name);
+                tdName.appendChild(nameNode);
+
+                var tdAdjustment = document.createElement('td');
+                var adjustmentNode = document.createTextNode(row.Adjustment);
+                tdAdjustment.appendChild(adjustmentNode);
+
+                var tdReason = document.createElement('td');
+                var nodeReason = document.createTextNode(row.Reason);
+                tdReason.appendChild(nodeReason);
+
+                var tdValue = document.createElement('td');
+                var nodeValue = document.createTextNode(row.Value);
+                tdValue.appendChild(nodeValue);
+
+                tRow.appendChild(tdCode);
+                tRow.appendChild(tdName);
+                tRow.appendChild(tdAdjustment);
+                tRow.appendChild(tdReason);
+                tRow.appendChild(tdValue);
+
+                tbody.append(tRow);
+                $('.ui.modal').modal('show');
+            })
+        }
+    }
+</script>
+

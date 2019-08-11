@@ -1,0 +1,97 @@
+﻿
+@{
+    ViewBag.Title = "RetrievalForm";
+    Layout = "~/Views/Shared/_DeptLayout.cshtml";
+}
+<div class="sixteen wide tablet twelve wide computer column">
+    <div class="ui grid">
+        <div class="sixteen wide tablet column">
+            <h5 class="ui header">Week of : 21/07/2018</h5>
+        </div>
+        <div class="sixteen wide tablet column">
+
+            <div class="field">
+                <label>Sort by </label> &nbsp;
+                <div class="ui selection dropdown" id="drop-down">
+                    <input type="hidden" name="gender">
+                    <i class="dropdown icon"></i>
+                    <div class="default text">Employee</div>
+                    <div class="menu">
+                        <div class="item" data-value="1">Male</div>
+                        <div class="item" data-value="0">Female</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="sixteen wide tablet column">
+            <label class="ui header">English Department</label><br />
+            <table class="ui celled table">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Name</th>
+                        <th>Qty</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td data-label="Code">C001</td>
+                        <td data-label="Name">Clips Double 1</td>
+                        <td data-label="Qty">100</td>
+                    </tr>
+                    <tr>
+                        <td data-label="Code">E003</td>
+                        <td data-label="Name">Exercise Book 100pg</td>
+                        <td data-label="Qty">5</td>
+                    </tr>
+                    <tr>
+                        <td data-label="Code">H011</td>
+                        <td data-label="Name">Highlighter Blue</td>
+                        <td data-label="Qty">100</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="sixteen wide tablet column">
+            <label class="ui header">Science Department</label><br />
+            <table class="ui celled table">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Name</th>
+                        <th>Qty</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td data-label="Code">C001</td>
+                        <td data-label="Name">Clips Double 1</td>
+                        <td data-label="Qty">100</td>
+                    </tr>
+                    <tr>
+                        <td data-label="Code">E003</td>
+                        <td data-label="Name">Exercise Book 100pg</td>
+                        <td data-label="Qty">5</td>
+                    </tr>
+                    <tr>
+                        <td data-label="Code">H011</td>
+                        <td data-label="Name">Highlighter Blue</td>
+                        <td data-label="Qty">100</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="sixteen wide tablet right aligned column">
+            <button class="ui button" style="background-color: #DDA820;">
+                <i class="print icon"></i>
+                Print
+            </button>
+        </div>
+    </div>
+</div>
+
+    <script>$(document).ready(function (){
+        $('#drop-down').dropdown();
+
+       </script>
+

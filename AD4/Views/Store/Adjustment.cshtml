@@ -1,0 +1,39 @@
+﻿
+@{
+    ViewBag.Title = "Adjustment";
+    Layout = "~/Views/Shared/_StoreLayout.cshtml";
+}
+<div class="sixteen wide tablet sixteen wide computer column">
+    <div class="ui grid">
+        <div class="sixteen wide tablet sixteen wide computer column">
+            <a class="ui blue tag label">Adjustment</a>
+            <div class="ui centered grid">
+                <div class="twelve wide computer column" style="margin-top:50px;">
+                    <div class="ui two column stackable center aligned grid">
+                        <div class="ui vertical divider"></div>
+                        <div class="middle aligned row">
+                            <div class="column">
+                                <div class="ui icon header">
+                                    <i class="adjust icon" style="color:gray"></i>
+                                    <span style="font-size:13px;">Stock Adjustment</span>
+                                </div>
+                                <div class="ui basic primary button">
+                                    @Html.ActionLink("Raise Stock Adjustments", "RaiseStockAdjustment", "Store")
+                                </div>
+                            </div>
+                            <div class="column">
+                                <div class="ui icon header">
+                                    <i class="clock icon" style="color:gray"></i>
+                                    <span style="font-size:13px;">Pending Stock Adjustment</span>
+                                </div>
+                                <div class="ui basic primary button">
+                                    @Html.ActionLink("View Pending Adjustments", "PendingAdjustment", "Store")
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

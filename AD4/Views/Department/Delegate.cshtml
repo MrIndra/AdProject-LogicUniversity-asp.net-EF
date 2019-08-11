@@ -1,0 +1,69 @@
+﻿
+@{
+    ViewBag.Title = "Delegate";
+    Layout = "~/Views/Shared/_DeptLayout.cshtml";
+}
+@model AD4.Models.Users
+@using AD4.Models
+<div class="sixteen wide tablet sixteen wide computer column">
+    <div class="ui grid">
+        <div class="sixteen wide tablet sixteen wide computer column">
+            <div class="ui grid">
+                <div class="sixteen wide computer column">
+                    <a class="ui blue tag label">Delegate Functions</a>
+                    <div class="ui one column centered grid">
+                        <div class="two column centered row">
+                            <div class="column ui raised segment">
+                                <div class="ui grid" style="padding-left:20px;padding-right:30px;background-color:#f2f2f2">
+                                    <div class="nine wide column"><span style="font-weight:bold">Employees</span></div>
+                                    <div class="four wide column"><span style="font-weight:bold">Dept Rep</span></div>
+                                    <div class="three wide column"><span style="font-weight:bold">Delegate</span></div>
+                                </div>
+
+                                <div class="ui middle aligned list" style="max-height: 250px;overflow-y: scroll;">
+                                    @foreach (var users in (List<Users>)ViewData["users"])
+                                    {
+                                        <div class="item" style="margin-left:8px;padding:10px;">
+                                            <div class="right floated content">
+                                                <div class="ui radio checkbox" style="margin-right:60px;">
+                                                    <input type="radio" name="representative">
+                                                    <label></label>
+                                                </div>
+                                                <div class="ui radio checkbox">
+                                                    <input type="radio" name="delegate">
+                                                    <label></label>
+                                                </div>
+                                            </div>
+                                            <i class="user icon"></i>
+                                            <div class="content">
+                                                <a class="text">@users.username</a>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div class="two column centered row">
+                            <div class="ui equal width grid">
+                                <div class="column">
+                                    <a class="item">
+                                        <span style="color:black">Department Representative</span><br /><br />
+                                        <i class="large check icon green"></i>
+                                        Kyew Soehan
+                                    </a>
+                                </div>
+                                <div class="column">
+                                    <a class="item">
+                                        <span style="color:black">Delegate Authority</span><br /><br />
+                                        <i class="large check icon green"></i>
+                                        Indrajit Maurya
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

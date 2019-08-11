@@ -1,0 +1,170 @@
+﻿@{
+    ViewBag.Title = "About";
+    Layout = "~/Views/Shared/_DeptLayout.cshtml";
+
+}
+@model IEnumerable<AD4.Models.Items>
+@using AD4.Models
+<div class="sixteen wide tablet sixteen wide computer column">
+    <div class="ui grid">
+        <div class="sixteen wide tablet six wide computer column">
+            <div class="ui styled accordion" id="item-accordion" style="max-height: 500px;overflow-y: scroll;width: 100%">
+                    @foreach (var group in Model.GroupBy(item => item.Category))
+                    {
+                        <div class="title">
+                            <i class="dropdown icon"></i>
+                            @group.Key
+                        </div>
+                        <div class="content">
+                            @foreach (var item in group)
+                            {
+                                <button class="ui primary basic button" style="margin-top: 5px" onclick="add(@item.Code,@item.price,@item.Name)">@item.Name</button><br />
+                            }
+                        </div>
+                    }
+            </div>
+
+                </div>
+        <div class="sixteen wide tablet ten wide computer column">
+            <div class="ui grid">
+                <div class="sixteen wide tablet column">
+                    <div class="ui input" style="width : 100%">
+                        <input type="text" placeholder="Search..." />
+                    </div>
+                </div>
+                <div class="sixteen wide tablet column">
+                    <div class="field" style="color: grey;">
+                        <div class="ui input" style="width : 100px;">
+                            <input type="number" placeholder="Qty..." min="1" />
+                        </div>
+                        <label>*Item Count by Dozen</label>
+
+                        <button class="ui button" style="background-color :#4285F4;color : white;margin-left: 20px">
+                            <i class="plus square outline icon"></i>
+                            Add
+                        </button>
+                    </div>
+
+                </div>
+                <div class="sixteen wide tablet column" style="max-height: 500px;overflow-y:scroll;">
+                    <table class="ui celled table">
+                        <thead>
+                            <tr>
+                                <th style="background-color:#f2f2f2;">Name</th>
+                                <th style="background-color:#f2f2f2;">Qty</th>
+                                <th style="background-color:#f2f2f2;">Price</th>
+                                <th style="background-color:#f2f2f2;">Total</th>
+                                <th style="background-color:#f2f2f2">Option</th>
+                            </tr>
+                        </thead>
+                        <tbody id="order-table-body"></tbody>
+                        <tfoot>
+                            <tr>
+                                <th></th>
+                                <th></th>
+                                <th>SUBTOTALddd</th>
+                                <th>$30088.00</th>
+                                <th></th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                <div class="sixteen wide tablet right aligned column">
+                    <button class="ui button" style="background-color :#4285F4;color : white;">
+                        <i class="paper plane outline icon"></i>
+                        Submit For Approval
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function add(code,price,name) {
+        alert(code+" "+ price +""+ name);
+    }
+
+
+    $(document).ready(function () {
+        var mobileSidebar = $('#mobile-sidebar');
+        var sidebarActivator = $('#sidebar-activator');
+        var sideBar = $('#sidebar');
+        var computerLogout = $('#computer-logout');
+        var tbody = $("#order-table-body");
+
+        var rows = [
+            { Name: 'Pen', Qty: 100, Price: 200, Total: 200 },
+            { Name: 'Pen', Qty: 100, Price: 200, Total: 200 },
+            { Name: 'Pen', Qty: 100, Price: 200, Total: 200 },
+            { Name: 'Pen', Qty: 100, Price: 200, Total: 200 }
+        ];
+
+        function removeItem(e) {
+            var index = 0;
+
+            for (var i = 0; i < rows.length; i++) {
+                if (rows[i].Code == e.target.id) {
+                    index = i;
+                    break;
+                }
+
+
+            }
+
+            rows.splice(index, 1);
+            insertRows();
+        }
+
+        insertRows();
+        function insertRows() {
+            tbody.empty();
+            rows.map(row => {
+                var tRow = document.createElement('tr');
+
+                var tdName = document.createElement('td');
+                var nameNode = document.createTextNode(row.Name);
+
+                var tdQty = document.createElement('td');
+                var qtyNode = document.createTextNode(row.Qty);
+
+                var tdPrice = document.createElement('td');
+                var priceNode = document.createTextNode(row.Price);
+
+                var tdTotal = document.createElement('td');
+                var totalNode = document.createTextNode(`$${row.Qty * row.Price}`);
+
+                tdName.appendChild(nameNode);
+                tdQty.appendChild(qtyNode);
+                tdPrice.appendChild(priceNode);
+                tdTotal.appendChild(totalNode);
+
+                var tdButton = document.createElement('td');
+                var button = document.createElement('button');
+                button.setAttribute('class', "negative compact icon ui button");
+                button.setAttribute('id', row.Code);
+
+                var tdTrashIcon = document.createElement('i');
+                tdTrashIcon.setAttribute('class', 'trash alternate icon');
+                tdTrashIcon.setAttribute('id', row.Code);
+
+                button.appendChild(tdTrashIcon);
+                button.onclick = removeItem;
+
+                tdButton.appendChild(button);
+                tRow.appendChild(tdName);
+                tRow.appendChild(tdQty);
+                tRow.appendChild(tdPrice);
+                tRow.appendChild(tdTotal);
+                tRow.appendChild(tdButton);
+
+                tbody.append(tRow);
+
+            });
+        }
+
+
+      
+    });</script>
+

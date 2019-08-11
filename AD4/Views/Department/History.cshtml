@@ -1,0 +1,107 @@
+﻿
+@{
+    ViewBag.Title = "History";
+    Layout = "~/Views/Shared/_DeptLayout.cshtml";
+}
+<div class="sixteen wide tablet twelve wide computer column">
+    <table class="ui celled table" style="border : 1px solid lightgrey !important;">
+        <thead>
+            <tr>
+                <th style="background-color:#f2f2f2;">No</th>
+                <th style="background-color:#f2f2f2;">Requestor</th>
+                <th style="background-color:#f2f2f2;">DateTime</th>
+                <th style="background-color:#f2f2f2;">Status</th>
+                <th style="background-color:#f2f2f2;"></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td data-label="Code">1</td>
+                <td data-label="Name">John Cena</td>
+                <td data-label="Brand">01/06/2019 1:00 PM</td>
+                <td data-label="Qty">Rejected</td>
+                <td><button class="ui primary basic button" onclick="viewOrder()">View Detail</button></td>
+            </tr>
+            <tr>
+                <td data-label="Code">2</td>
+                <td data-label="Name">John Cena</td>
+                <td data-label="Brand">01/06/2019 1:00 PM</td>
+                <td data-label="Qty">Delivered</td>
+                <td><button class="ui primary basic button" onclick="viewOrder()">View Detail</button></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="ui modal">
+    <div class="header">Requestor Name : Mr.XYZ</div>
+    <div class="content">
+        <table class="ui celled table">
+            <thead>
+                <tr>
+                    <th style="background-color:#f2f2f2;">Code</th>
+                    <th style="background-color:#f2f2f2;">Name</th>
+                    <th style="background-color:#f2f2f2;">Qty</th>
+                    <th style="background-color:#f2f2f2;">Price</th>
+                    <th style="background-color:#f2f2f2;">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>XHKS</td>
+                    <td>Pencil 2B</td>
+                    <td>10</td>
+                    <td>$1.5</td>
+                    <td>$150.00</td>
+                </tr>
+                <tr>
+                    <td>XHKS</td>
+                    <td>Pencil 2B</td>
+                    <td>10</td>
+                    <td>$1.5</td>
+                    <td>$150.00</td>
+                </tr>
+                <tr>
+                    <td>XHKS</td>
+                    <td>Pencil 2B</td>
+                    <td>10</td>
+                    <td>$1.5</td>
+                    <td>$150.00</td>
+                </tr>
+                <tr>
+                    <td>XHKS</td>
+                    <td>Pencil 2B</td>
+                    <td>10</td>
+                    <td>$1.5</td>
+                    <td>$150.00</td>
+                </tr>
+                <tr>
+                    <td>XHKS</td>
+                    <td>Pencil 2B</td>
+                    <td>10</td>
+                    <td>$1.5</td>
+                    <td>$150.00</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th>SUBTOTAL</th>
+                    <th>$300.00</th>
+                </tr>
+            </tfoot>
+        </table>
+
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+
+    });
+    function viewOrder() {
+        $('.ui.modal').modal('show');
+    }
+</script>
