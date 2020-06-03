@@ -1,0 +1,135 @@
+﻿@using WebApplication1.Models
+
+@{
+    Layout = "~/Views/Shared/_StoreLayout.cshtml";
+    List<RetrievalItem> retrievalItems = null;
+    if (ViewData["RetrievalItems"] != null)
+    {
+        retrievalItems = (List<RetrievalItem>)ViewData["RetrievalItems"];
+    }
+}
+
+<div class="ui grid">
+
+    <div class=" sixteen wide tablet column" id="table">
+        <form onkeydown="return event.key != 'Enter';" id="retrieval-form" method="POST" action="http://localhost:50271/disbursement/Disbursements">
+            <table class="ui celled table">
+                <thead>
+                    <tr>
+                        <th>
+                            Item Description
+                        </th>
+                        <th>
+                            In Stock Quantity
+                        </th>
+                        <th>
+                            Quantity to Retrieve
+                        </th>
+                        <th>
+                            Collected Quantity
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    @if (retrievalItems != null && retrievalItems.Count > 0)
+                    {
+                        for (var i = 0; i < retrievalItems.Count; i++)
+                        {
+                            <tr>
+                                <td>
+                                    @retrievalItems[i].Description
+                                </td>
+                                <td>
+                                    @retrievalItems[i].StockQuantity
+                                </td>
+                                <td>
+                                    @retrievalItems[i].AllocatedQuantity
+                                </td>
+                                <td>
+                                    <input type="hidden" value="@retrievalItems[i].ItemId" name="[@i].ItemId" />
+                                    <input type="hidden" value="@retrievalItems[i].StockQuantity" name="[@i].StockQuantity" />
+                                    <input type="hidden" value="@retrievalItems[i].AllocatedQuantity" name="[@i].AllocatedQuantity" />
+                                    <div class="ui input" style="width : 100%">
+                                        <input id="@retrievalItems[i].ItemId" type="number" min="0" max="@retrievalItems[i].AllocatedQuantity" name="[@i].ActualQuantity" />
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+            @if (retrievalItems != null && retrievalItems.Count > 0)
+            {
+                <button type="button" onclick="formSubmitting()" class="ui primary button">PREPARED</button>
+
+            }
+        </form>
+
+    </div>
+</div>
+
+<div  class="ui modal">
+    <div class="header" style="color : orange !important;">
+        Warning
+    </div>
+    <div class="content">
+        <p>
+            Since, requested quantities and collected quantities are mismatched, submitting this form will automatically generate adjustments for mismatched items.
+            Are your sure to continue?
+        </p>
+    </div>
+    <div class="actions">
+        <div class="ui red deny button">
+            No
+        </div>
+        <div class="ui positive button">
+            Yes
+        </div>
+    </div>
+    
+</div>
+@{ 
+    List<int> itemIds = new List<int>();
+    foreach(var i in retrievalItems)
+    {
+        itemIds.Add(i.ItemId);
+    }
+}
+<script>
+    var itemInfo = {};
+    @foreach(var i in retrievalItems)
+    {
+        @:itemInfo["@i.ItemId"] = @i.AllocatedQuantity;
+    }
+
+    function formSubmitting() {
+        var keys = Object.keys(itemInfo);
+        var mismatch = false;
+        var overInput = false;
+        for (var i = 0; i < keys.length; i++) {
+            var actualInputAmount = Math.round(Number($(`#${keys[i]}`).val()));
+            var allocatedAmount = Math.round(Number(itemInfo[keys[i]]));
+            if (actualInputAmount < allocatedAmount) {
+                mismatch = true;
+                break;
+            } else if (actualInputAmount > allocatedAmount) {
+                overInput = true;
+                break;
+            }
+        }
+
+        if (mismatch) {
+            $('.ui.modal').modal({
+                onApprove: function () {
+                    document.getElementById("retrieval-form").submit();
+                }
+            }).modal('show');
+        } else if (overInput) {
+
+        } else {
+            document.getElementById("retrieval-form").submit();
+        }
+    }
+        
+</script>

@@ -1,0 +1,56 @@
+﻿@using WebApplication1.Models
+@{
+    Layout = "~/Views/Shared/_StoreLayout.cshtml";
+    ViewBag.Title = "My Order";
+    Order o = (Order)ViewData["Order"];
+    var subtotal = 0;
+}
+
+<div class="ui grid">
+    <div class="sixteen wide tablet column">
+        <h5 class="ui header">Requestor : @o.Requestor.Name</h5>
+        <h5 class="ui header">Submitted Date : @o.Date.ToString("dd/MM/yyyy")</h5>
+        <h5 class="ui header">Status : <span class=" @(o.Status == (int)OrderStatus.Rejected ? "redText": "")">@Enum.GetName(typeof(OrderStatus), o.Status)</span></h5>
+        @if (o.ApprovedBy != null)
+        {
+            <h5 class="ui header">Approved By : @o.ApprovedBy.Name</h5>
+
+        }
+    </div>
+    <div class="sixteen wide tablet column">
+        <table class="ui celled table">
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Order Quantity</th>
+                    <th>Delivered Quantity</th>
+                    <th>UOM</th>
+                    <th>Price</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var od in o.OrderDetails)
+                {
+                    var total = od.Item.Price * (od.DeliveredQuantity == 0 ? od.OrderQuantity : od.DeliveredQuantity);
+                    subtotal += total;
+                    <tr>
+                        <td>@od.Item.Description</td>
+                        <td>@od.OrderQuantity</td>
+                        <td>@(od.DeliveredQuantity == 0 ? "-" : od.DeliveredQuantity.ToString())</td>
+                        <td>@od.Item.UnitOfMeasure</td>
+                        <td>$@od.Item.Price</td>
+                        <td>
+                            $@total
+                        </td>
+                    </tr>
+
+                }
+                <tr>
+                    <td colspan="5" style="text-align : right">SUBTOTAL</td>
+                    <td>$@subtotal</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

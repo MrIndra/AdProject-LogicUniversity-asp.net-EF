@@ -1,0 +1,320 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+using WebApplication1.Models;
+using WebApplication1.DAOs;
+using WebApplication1.DataAccessLayer;
+using System.Diagnostics;
+using WebApplication1.Filters;
+using System.Threading.Tasks;
+using WebApplication1.Utilities;
+
+namespace WebApplication1.Controllers
+{
+    [AuthFilter]
+    public class DisbursementController : Controller
+    {
+
+        [HttpGet,Route("deliveries/{id}")]
+        [AuthorizeFilter((int)UserRank.Manager,(int)UserRank.Supervisor,(int)UserRank.Clerk)]
+        public ActionResult Disbursements(int id)
+        {
+            Disbursement d = DisbursementDao.GetDisbursement(id);
+            
+            ViewData["Disbursement"] = d;
+            return View("DeliveryDetail");
+        }
+
+        //for representative employee to get delivered disbursement and approve it
+        [HttpGet,Route("delivereddisbursements",Name = "delivereddisbursements")]
+        [AuthorizeFilter((int)UserRank.Employee, (int)UserRank.TemporaryHead)]
+        public ActionResult GetDeliveredDisbursements()
+        {
+            int departmentId = Convert.ToInt32(RouteData.Values["departmentId"]);
+            int userId = Convert.ToInt32(RouteData.Values["userId"]);
+            List<Disbursement> disbursements = DisbursementDao.GetDisbursementsByDepartmentAndMonth(userId,departmentId, DateTime.Now.Month,(int)DisbursementStatus.Delivered);
+            ViewData["Disbursements"] = disbursements;
+            return View("DeliveredDisbursements");
+        }
+
+        [HttpGet, Route("delivereddisbursements/{disbursementId}")]
+        public ActionResult GetDeliveredDisbursementDetailById(int disbursementId)
+        {
+            int departmentId = Convert.ToInt32(RouteData.Values["departmentId"]);
+            Disbursement d = DisbursementDao.GetDeliveredDisbursementById(disbursementId);
+            ViewData["Disbursement"] = d;
+            return View("DisbursementDetail");
+        }
+
+
+        //approve disbursement by employee
+        [HttpGet,Route("approvedisbursements/{disbursementId}")]
+        public ActionResult ApproveDisbursementById(int disbursementId)
+        {
+            int departmentId = Convert.ToInt32(RouteData.Values["departmentId"]);
+            int userId = Convert.ToInt32(RouteData.Values["userId"]);
+
+            Department d = new Department()
+            {
+                DepartmentId = departmentId
+            };
+            User u = new User()
+            {
+                UserId = userId
+            };
+
+            u.Department = d;
+
+            DisbursementDao.ApproveDisubrsementById(u, disbursementId);
+
+            return RedirectToAction("GetDeliveredDisbursements");
+
+        }
+
+
+
+        //when reach to the collection point and storeman will click deliver to the particular disbursement id
+        [HttpPost, Route("deliveries/{id}")]
+        [AuthorizeFilter((int)UserRank.Clerk)]
+        public ActionResult ReceiveItemsByDepartment(List<DisbursementDetail> details,int id)
+        {
+
+            Dictionary<int,DisbursementDetail> dDict = DisbursementDao.GetDisbursementDetailDictByDisbursementId(id);
+
+            //generate adjustment if items are missing
+            List<AdjustmentDetail> adjustmentDetails = new List<AdjustmentDetail>();
+            //if detail drop to 0 , it should be removed
+            List<DisbursementDetail> disDetails = new List<DisbursementDetail>();
+            foreach (var d in details)
+            {
+                DisbursementDetail disDetail = dDict[d.DisbursementDetailId];
+                if(disDetail.Quantity != d.Quantity && d.Quantity < disDetail.Quantity)
+                {
+                    AdjustmentDetail adDetail = new AdjustmentDetail()
+                    {
+                        Item = new Item()
+                        {
+                            ItemId = d.Item.ItemId
+                        },
+                        Count = disDetail.Quantity - d.Quantity
+                        
+                    };
+                    if(d.Quantity == 0)
+                    {
+                        disDetails.Add(disDetail);
+                    }
+                    adjustmentDetails.Add(adDetail);
+                }
+            }
+
+            if(adjustmentDetails.Count > 0)
+            {
+                int userId = Convert.ToInt32(RouteData.Values["userId"]);
+                User u = new User()
+                {
+                    UserId = userId
+                };
+                Adjustment ad = AdjustmentDao.InsertAdjustment(adjustmentDetails, u);
+                AdjustmentDao.CalculateAdjustmentCost(ad);
+            }
+
+
+
+            Disbursement dis = DisbursementDao.GetDisbursement(id);
+            int requestId = dis.Request.RequestId;
+
+            dis = DisbursementDao.DeliverDisbursement(id, details);
+
+            //remove disbursement detail with quantity of zero
+            if (disDetails.Count > 0)
+            {
+                DisbursementDao.RemoveDisbursementDetails(disDetails);
+                //details have been removed, need to remove disbursement if disbursement got no details
+                //removedDisbursement = DisbursementDao.RemoveDisbursementWithoutDetails(id);
+            }
+
+            dis = DisbursementDao.GetDeliveredDisbursement(id);
+            if(dis != null)
+            {
+                //need to update the request such as status, delivered Qty
+                RequestDao.UpdateRequestById(requestId);
+            }else
+            {
+                //if disbursement is removed, change disbursement status of request back to not prepared
+                RequestDao.UpdateRequestDisbursementStatus(requestId);
+            }
+
+
+            return RedirectToAction("Deliveries");
+        }
+
+
+        //storeman will get all of the prepared disbursements
+        [HttpGet,Route("deliveries",Name = "deliveries")]
+        [AuthorizeFilter((int)UserRank.Clerk)]
+        public ActionResult Deliveries()
+        {
+            int userId = Convert.ToInt32(RouteData.Values["userId"]);
+            List<Disbursement> disbursements = DisbursementDao.GetPreparedDisbursements(userId);
+            ViewData["Disbursements"] = disbursements;
+            return View("Deliveries");
+        }
+
+
+        //retrieving and preparing for delivery
+        [HttpPost, Route("disbursement/disbursements")]
+        [AuthorizeFilter((int)UserRank.Clerk)]
+        public ActionResult Disbursements(List<RetrievalItem> items)
+        {
+
+            List<AdjustmentDetail> adjustmentDetails = new List<AdjustmentDetail>();
+            bool valid = true;
+            foreach(var i in items)
+            {
+                if (i.AllocatedQuantity > i.ActualQuantity)
+                {
+                    AdjustmentDetail detail = new AdjustmentDetail()
+                    {
+                        Count = (i.StockQuantity - i.ActualQuantity),
+                        Item = new Item()
+                        {
+                            ItemId = i.ItemId
+                        }
+                    };
+
+                    adjustmentDetails.Add(detail);
+                }else if (i.AllocatedQuantity == i.ActualQuantity)
+                {
+
+                }else 
+                {
+                    valid = false;
+                    break;
+                }
+            }
+            if(valid != false)
+            {
+                if (adjustmentDetails.Count > 0)
+                {
+                    int userId = Convert.ToInt32(RouteData.Values["userId"]);
+                    User u = new User()
+                    {
+                        UserId = userId
+                    };
+                    Adjustment ad = AdjustmentDao.InsertAdjustment(adjustmentDetails, u);
+                    AdjustmentDao.CalculateAdjustmentCost(ad);
+                    ItemDao.UpdateStockForAdjustment(adjustmentDetails);
+                }
+
+                DisbursementDao.GenerateDisbursements(items);
+                Task.Run(() => EmailUtility.SendEmailForItemsPickUp());
+                return RedirectToAction("Retrieval", "Stationery");
+            }
+            else
+            {
+                return RedirectToAction("Retrieval", "Stationery");
+            }
+
+        }
+
+        [HttpGet,Route("invoices",Name = "invoices")]
+        [AuthorizeFilter((int)UserRank.Manager,(int)UserRank.Supervisor,(int)UserRank.Clerk)]
+        public ActionResult GenerateInvoices()
+        {
+            List<Department> departments = DepartmentDao.GetAllDepartments();
+            
+            Dictionary<int, string> monthDict = new Dictionary<int, string>();
+            foreach( var i in Enum.GetValues(typeof(Months))){
+                monthDict.Add((int)i, i.ToString());
+            }
+            ViewData["Departments"] = departments;
+            ViewData["MonthDict"] = monthDict;
+            return View("Invoices");
+        }
+
+        [HttpGet,Route("disbursements")]
+        public ActionResult GetDisbursementListWithMonth(int requestedDepartmentId, int month)
+        {
+            Debug.WriteLine("Department Id is " + requestedDepartmentId + " month is " + month);
+            List<Disbursement> disbursements = DisbursementDao.GetDisbursementsByDepartmentAndMonth(requestedDepartmentId, month,(int)DisbursementStatus.Approved);
+            List<object> data = new List<object>();
+            if(disbursements != null)
+            {
+                foreach(var d in disbursements)
+                {
+                    data.Add(new
+                    {
+                        DisbursementId = d.DisbursementId,
+                        Total = d.DisbursementDetails.Sum(dd => dd.Item.Price * dd.Quantity )
+                });
+                }
+                
+            }
+
+            return Json(new {results = data },JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpGet,Route("generateinvoice")]
+        public ActionResult GenerateInvoice(int requestedDepartmentId, int month) {
+            try
+            {
+                Debug.WriteLine("Department Id is " + requestedDepartmentId);
+                DisbursementDao.GenerateInvoiceByDepartmentAndMonth(requestedDepartmentId, month);
+                return RedirectToAction("GenerateInvoices");
+            }
+            catch (Exception e)
+            {
+                return RedirectToAction("GenerateInvoices");
+            }
+        }
+
+        //employee can watch disbursements by department
+        [HttpGet,Route("departmentdisbursements", Name = "departmentdisbursements")]
+        public ActionResult GetAllDisbursementByDepartment()
+        {
+            int departmentId = Convert.ToInt32(RouteData.Values["departmentId"]);
+            List<Disbursement> disbursements = DisbursementDao.GetAllDisbursementsByDepartment(departmentId);
+            ViewData["Disbursements"] = disbursements;
+            return View("DepartmentDisbursements");
+        }
+
+        //department disbursement detail
+        [HttpGet, Route("departmentdisbursements/{disbursementId}")]
+        public ActionResult GetDisbursementDetailByDepartment(int disbursementId)
+        {
+            int departmentId = Convert.ToInt32(RouteData.Values["departmentId"]);
+            Disbursement d = DisbursementDao.GetDisbursementDetailById(departmentId);
+            ViewData["Disbursement"] = d;
+            return View("DepartmentDisbursementDetail");
+        }
+
+        [HttpGet,Route("prepareddisbursements",Name = "prepareddisbursements")]
+        [AuthorizeFilter((int)UserRank.Employee,(int)UserRank.TemporaryHead,(int)UserRank.Head)]
+        public ActionResult GetPreparedDisbursementsByDepartment()
+        {
+            int departmentId = Convert.ToInt32(RouteData.Values["departmentId"]);
+            int userId = Convert.ToInt32(RouteData.Values["userId"]);
+            List<Disbursement> disbursements = DisbursementDao.GetPreparedDisbursements(departmentId, userId);
+            ViewData["Disbursements"] = disbursements;
+            return View("PickUpDisbursements");
+            
+        }
+
+
+        //approved disbursements for invoice
+        [HttpGet, Route("approveddisbursements/{disbursementId}")]
+        [AuthorizeFilter((int)UserRank.Manager,(int)UserRank.Supervisor,(int)UserRank.Clerk)]
+        public ActionResult ApprovedDisbursements(int disbursementId)
+        {
+            Disbursement d = DisbursementDao.GetDisbursementDetailById(disbursementId);
+
+            ViewData["Disbursement"] = d;
+
+            return View("ApprovedDisbursementDetail");
+        }
+
+       
+    }
+}
